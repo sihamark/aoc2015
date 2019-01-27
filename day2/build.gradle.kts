@@ -4,7 +4,7 @@ plugins {
 }
 
 application {
-    mainClassName = "aoc2015.day1.MainKt"
+    mainClassName = "aoc2015.day2.MainKt"
 }
 
 dependencies {
