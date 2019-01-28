@@ -9,6 +9,8 @@ subprojects {
 }
 
 
+//todo: sub project configuration https://docs.gradle.org/current/userguide/plugins.html#sec:subprojects_plugins_dsl 
+
 def dayProjects = /day(\d+)/
 
 configure(subprojects.findAll { it.name.matches(dayProjects) }) {
