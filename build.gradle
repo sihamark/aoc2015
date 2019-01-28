@@ -1,0 +1,16 @@
+allprojects {
+    repositories {
+        jcenter()
+    }
+}
+
+subprojects {
+    version = "1.0"
+}
+
+
+def dayProjects = /day(\d+)/
+
+configure(subprojects.findAll { it.name.matches(dayProjects) }) {
+
+}
