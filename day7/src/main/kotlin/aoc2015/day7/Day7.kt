@@ -6,6 +6,8 @@ package aoc2015.day7
 @ExperimentalUnsignedTypes
 object Day7 {
 
+    //TODO: add solution from mabel
+
     fun valueForWireA(): Int {
         val commands = input.map { Parser.parse(it) }
                 .associate { it.result to it.expression }
