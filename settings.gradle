@@ -1,9 +1,6 @@
 rootProject.name = 'AoC-2015'
 
 include 'common'
-include 'day1'
-include 'day2'
-include 'day3'
-include 'day4'
-include 'day5'
-
+(1..5).each {
+    include("day$it")
+}
