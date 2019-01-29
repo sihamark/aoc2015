@@ -1,3 +1,15 @@
+buildscript {
+    ext {
+        kotlin_version = '1.3.20'
+    }
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
 allprojects {
     repositories {
         jcenter()
@@ -9,10 +21,19 @@ subprojects {
 }
 
 
-//todo: sub project configuration https://docs.gradle.org/current/userguide/plugins.html#sec:subprojects_plugins_dsl 
-
 def dayProjects = /day(\d+)/
 
 configure(subprojects.findAll { it.name.matches(dayProjects) }) {
 
+    apply plugin: 'kotlin'
+    apply plugin: 'application'
+
+    application {
+        mainClassName = "aoc2015.${project.name}.MainKt"
+    }
+
+    dependencies {
+        implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+        implementation project(":common")
+    }
 }
