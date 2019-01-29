@@ -35,7 +35,7 @@ object Day6 {
         return matrix.countTurnedOn()
     }
 
-    object Parser {
+    private object Parser {
         private val regex = Regex("""(turn on|turn off|toggle) (\d+),(\d+) through (\d+),(\d+)""")
 
         fun parse(rawCommand: String): Command {
@@ -58,7 +58,7 @@ object Day6 {
         private fun parsePosition(x: String, y: String) = Position(x.toInt(), y.toInt())
     }
 
-    data class Command(
+    private data class Command(
             val type: Type,
             val positions: PositionRange
     ) {
@@ -67,9 +67,9 @@ object Day6 {
         }
     }
 
-    operator fun Position.rangeTo(other: Position) = PositionRange(this, other)
+    private operator fun Position.rangeTo(other: Position) = PositionRange(this, other)
 
-    data class PositionRange(
+    private data class PositionRange(
             val start: Position,
             val endInclusive: Position
     ) : Iterable<Position> {
@@ -105,7 +105,7 @@ object Day6 {
         }
     }
 
-    data class Position(
+    private data class Position(
             val x: Int,
             val y: Int
     ) : Comparable<Position> {
@@ -133,7 +133,7 @@ object Day6 {
         }
     }
 
-    class BrightnessLightMatrix {
+    private class BrightnessLightMatrix {
         private val lights = mutableMapOf<Position, Int>()
 
         private operator fun get(position: Position): Int = lights[position] ?: 0
@@ -156,7 +156,7 @@ object Day6 {
         fun countTurnedOn() = lights.map { it.value }.sum()
     }
 
-    class ToggleLightMatrix {
+    private class ToggleLightMatrix {
         private val lights = mutableMapOf<Position, Boolean>()
 
         private operator fun get(position: Position): Boolean = lights[position] ?: false
