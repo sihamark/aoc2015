@@ -1,6 +1,6 @@
 rootProject.name = 'AoC-2015'
 
 include 'common'
-(1..6).each {
+(1..7).each {
     include("day$it")
 }
