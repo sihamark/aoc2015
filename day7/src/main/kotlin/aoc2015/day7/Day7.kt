@@ -6,20 +6,51 @@ package aoc2015.day7
 @ExperimentalUnsignedTypes
 object Day7 {
 
-    //TODO: add solution from mabel
+    private val validVariableName = Regex("""[a-z]+""")
 
     fun valueForWireA(): Int {
         val commands = input.map { Parser.parse(it) }
                 .associate { it.result to it.expression }
+                .toMutableMap()
 
         return Solver(commands).solveFor("a").toInt()
     }
 
-    private object Parser {
-        //                                1     2                      3        4        5     6           7        8        9        10           11
-        private const val rawValidCommand = """(\w+) (AND|OR|RSHIFT|LSHIFT) (\w+) -> ([a-z]+)|(NOT) ([a-z]+) -> ([a-z]+)|(\d+) -> ([a-z]+)|([a-z]+) -> ([a-z]+)"""
+    fun valueForWireBAfterA(): Int {
+        val commands = input.map { Parser.parse(it) }
+                .associate { it.result to it.expression }
+                .toMutableMap()
+
+
+        val a = Solver(commands).solveFor("a")
+
+        commands["b".toVariable()] = a.toDiscrete()
+
+        return Solver(commands).solveFor("a").toInt()
+    }
+
+    fun String.toVariable() = Expression.Variable(this).also {
+        assert(this.matches(validVariableName))
+    }
+
+    fun UShort.toDiscrete() = Expression.Discrete(this)
+
+    sealed class Expression {
+        data class Discrete(val value: UShort) : Expression()
+        data class Variable(val name: String) : Expression()
+        data class And(val leftValue: Expression, val rightValue: Expression) : Expression()
+        data class Or(val leftValue: Expression, val rightValue: Expression) : Expression()
+        data class RightShift(val leftValue: Expression, val rightValue: Discrete) : Expression()
+        data class LeftShift(val leftValue: Expression, val rightValue: Discrete) : Expression()
+        data class Not(val value: Expression) : Expression()
+    }
+
+    object Parser {
+        private const val rawValidCommand =
+        //      1     2                      3        4        5     6           7        8        9        10           11
+                """(\w+) (AND|OR|RSHIFT|LSHIFT) (\w+) -> ([a-z]+)|(NOT) ([a-z]+) -> ([a-z]+)|(\d+) -> ([a-z]+)|([a-z]+) -> ([a-z]+)"""
+
         private val validCommand = Regex(rawValidCommand)
-        private val validVariableName = Regex("""[a-z]+""")
 
         fun parse(rawCommand: String): Command {
             val matches = validCommand.find(rawCommand)?.groupValues ?: error("invalid raw command: $rawCommand")
@@ -27,8 +58,8 @@ object Day7 {
             when {
                 matches[2] == "AND" -> return and(matches[1], matches[3], matches[4])
                 matches[2] == "OR" -> return or(matches[1], matches[3], matches[4])
-                matches[2] == "RSHIFT" -> return or(matches[1], matches[3], matches[4])
-                matches[2] == "LSHIFT" -> return or(matches[1], matches[3], matches[4])
+                matches[2] == "RSHIFT" -> return rightShift(matches[1], matches[3], matches[4])
+                matches[2] == "LSHIFT" -> return leftShift(matches[1], matches[3], matches[4])
             }
 
             if (matches[5] == "NOT") {
@@ -43,89 +74,70 @@ object Day7 {
                 return setVariable(matches[10], matches[11])
             }
 
-            TODO("could not parse: $rawCommand $matches")
+            error("unsupported command: $rawCommand")
         }
 
-        private fun setVariable(value: String, result: String) = Command(
-                result.toVariable(),
-                value.toVariable()
-        )
+        private fun setVariable(value: String, result: String) = result.toVariable().fromExpression(value.toVariable())
 
-        private fun setDiscrete(value: String, result: String) = Command(
-                result.toVariable(),
-                value.toDiscrete()
-        )
+        private fun setDiscrete(value: String, result: String) = result.toVariable().fromExpression(value.toDiscrete())
 
-        private fun not(value: String, result: String) = Command(
-                result.toVariable(),
-                Expression.Not(value.toVariable())
-        )
+        private fun not(value: String, result: String) =
+                result.toVariable().fromExpression(Expression.Not(value.toVariable()))
 
-        private fun rshift(left: String, right: String, result: String) = Command(
-                result.toVariable(),
-                Expression.Rshift(left.toDiscreteOrVariable(), right.toDiscrete())
-        )
+        private fun rightShift(left: String, right: String, result: String) =
+                result.toVariable().fromExpression(Expression.RightShift(left.toDiscreteOrVariable(), right.toDiscrete()))
 
-        private fun lshift(left: String, right: String, result: String) = Command(
-                result.toVariable(),
-                Expression.Lshift(left.toDiscreteOrVariable(), right.toDiscrete())
-        )
+        private fun leftShift(left: String, right: String, result: String) =
+                result.toVariable().fromExpression(Expression.LeftShift(left.toDiscreteOrVariable(), right.toDiscrete()))
 
-        private fun and(left: String, right: String, result: String) = Command(
-                result.toVariable(),
-                Expression.And(left.toDiscreteOrVariable(), right.toDiscreteOrVariable())
-        )
+        private fun and(left: String, right: String, result: String) =
+                result.toVariable().fromExpression(Expression.And(left.toDiscreteOrVariable(), right.toDiscreteOrVariable()))
 
-        private fun or(left: String, right: String, result: String) = Command(
-                result.toVariable(),
-                Expression.Or(left.toDiscreteOrVariable(), right.toDiscreteOrVariable())
-        )
+        private fun or(left: String, right: String, result: String) =
+                result.toVariable().fromExpression(Expression.Or(left.toDiscreteOrVariable(), right.toDiscreteOrVariable()))
 
-        private fun String.toDiscrete(): Expression.DiscreteNumber = Expression.DiscreteNumber(this.toUShort())
-        private fun String.toVariable(): Expression.Variable = Expression.Variable(this).also {
-            assert(this.matches(validVariableName))
-        }
+        private fun String.toDiscrete(): Expression.Discrete = this.toUShort().toDiscrete()
 
         private fun String.toDiscreteOrVariable(): Expression {
             val numValue = this.toUShortOrNull()
-            return if (numValue == null) Expression.Variable(this) else Expression.DiscreteNumber(numValue)
+            return if (numValue == null) Expression.Variable(this) else Expression.Discrete(numValue)
         }
+
+        private fun Expression.Variable.fromExpression(expression: Expression) = Command(this, expression)
+
+        data class Command(
+                val result: Expression.Variable,
+                val expression: Expression
+        )
     }
 
-    private data class Command(
-            val result: Expression.Variable,
-            val expression: Expression
-    )
-
-    private sealed class Expression {
-        data class DiscreteNumber(val value: UShort) : Expression()
-        data class Variable(val variable: String) : Expression()
-        data class And(val leftValue: Expression, val rightValue: Expression) : Expression()
-        data class Or(val leftValue: Expression, val rightValue: Expression) : Expression()
-        data class Rshift(val leftValue: Expression, val rightValue: DiscreteNumber) : Expression()
-        data class Lshift(val leftValue: Expression, val rightValue: DiscreteNumber) : Expression()
-        data class Not(val value: Expression) : Expression()
-    }
-
-    private class Solver(
-            private val commands: Map<Expression.Variable, Expression>
+    class Solver(
+            private val commands: Map<Expression.Variable, Expression>,
+            private val logging: Boolean = false
     ) {
+
+        private val values = mutableMapOf<Expression.Variable, Expression.Discrete>()
+
+        private fun command(variable: Expression.Variable) =
+                values[variable] ?: commands[variable] ?: error("did not find expression for variable: $this")
 
         fun solveFor(variable: String): UShort {
             val expression = commands[Expression.Variable(variable)] ?: error("dit not find expression for $variable")
 
-            println("now solve $expression")
-
             return expression.solve()
         }
 
-        private fun Expression.solve(): UShort = when (this) {
-            is Expression.DiscreteNumber -> this.value
-            is Expression.Variable -> commands[this]?.solve() ?: error("did not find expression for variable: $this")
-            is Expression.And -> leftValue.solve() and rightValue.solve()
-            is Expression.Or -> leftValue.solve() or rightValue.solve()
-            is Expression.Not -> value.solve().inv()
-            else -> TODO("implement solving for $this")
+        private fun Expression.solve(): UShort {
+            if (logging) println("solve $this")
+            return when (this) {
+                is Expression.Discrete -> this.value
+                is Expression.Variable -> command(this).solve().also { values[this] = Expression.Discrete(it) }
+                is Expression.And -> leftValue.solve() and rightValue.solve()
+                is Expression.Or -> leftValue.solve() or rightValue.solve()
+                is Expression.Not -> value.solve().inv()
+                is Expression.RightShift -> (leftValue.solve().toUInt() shr rightValue.value.toInt()).toUShort()
+                is Expression.LeftShift -> (leftValue.solve().toUInt() shl rightValue.value.toInt()).toUShort()
+            }
         }
     }
 }

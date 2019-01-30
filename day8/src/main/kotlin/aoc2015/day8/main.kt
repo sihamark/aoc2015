@@ -8,7 +8,7 @@ import aoc2015.start
  */
 fun main(args: Array<String>) {
     prepare(
-            { "" },
-            { "" }
+            { "${Day8.solvePart1()}" },
+            { "${Day8.solvePart2()}" }
     ).start(args)
 }

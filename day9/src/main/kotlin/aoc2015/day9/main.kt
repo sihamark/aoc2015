@@ -9,7 +9,7 @@ import aoc2015.start
 
 fun main(args: Array<String>) {
     prepare(
-            { "" },
-            { "" }
+            { "shortest distance is ${Day9.findShortestRoute()}" },
+            { "longest distance is ${Day9.findLongestRoute()}" }
     ).start(args)
 }

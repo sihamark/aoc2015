@@ -1,6 +1,8 @@
 rootProject.name = 'AoC-2015'
 
 include 'common'
+include 'utility'
+
 (1..9).each {
     include("day$it")
 }
