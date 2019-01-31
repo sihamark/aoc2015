@@ -1,4 +1,4 @@
-package day13
+package aoc2015.day13
 
 val input = listOf(
         """Alice would gain 54 happiness units by sitting next to Bob.""",
