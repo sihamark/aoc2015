@@ -1,23 +1,20 @@
 package aoc2015.day15
 
-import aoc2015.utility.allPermutations
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.runBlocking
-
-@ExperimentalCoroutinesApi
 object Day15 {
 
-    fun highestCookieScore(): Int = runBlocking {
+    fun highestCookieScore(): Int {
         val ingredients = input.map { Parser.parse(it) }
 
-        val recipes = mutableListOf<Recipe>()
-        (0..100).toList().allPermutations(ingredients.size) { rawRecipe ->
-            val recipe = Recipe(rawRecipe.mapIndexed { index, i ->
-                CountedIngredient(i, ingredients[index])
-            })
-            recipes.add(recipe)
-        }
-        recipes.filter { it.numberOfIngredients == 100 }
+        println(ingredients.map { it.name })
+
+        return CounterIterator((0..100).toList(), 4)
+                .asSequence()
+                .filter { it.sum() == 100 }
+                .map {
+                    Recipe(it.mapIndexed { index, amount ->
+                        CountedIngredient(amount, ingredients[index])
+                    })
+                }
                 .map { it.calculateScore() }
                 .max()!!
     }
@@ -25,9 +22,6 @@ object Day15 {
     private data class Recipe(
             val ingredients: List<CountedIngredient>
     ) {
-        val numberOfIngredients: Int
-            get() = ingredients.map { it.amount }.sum()
-
         fun calculateScore() = sumProperty { it.capacity } *
                 sumProperty { it.durability } *
                 sumProperty { it.flavor } *
@@ -50,6 +44,39 @@ object Day15 {
             val amount: Int,
             val ingredient: Ingredient
     )
+
+    private class CounterIterator<T>(private val elements: List<T>, places: Int) : Iterator<List<T>> {
+
+        private var currentIndices = List(places) { 0 }
+        private var hasNext = true
+
+        override fun next(): List<T> {
+            val result = currentIndices.map { elements[it] }
+
+            currentIndices = currentIndices.next()
+
+            return result
+        }
+
+        override fun hasNext(): Boolean = hasNext
+
+        private fun List<Int>.next(): List<Int> {
+            val next = this.toMutableList()
+            for (index in (size - 1) downTo 0) {
+                val inc = next[index] + 1
+                if (inc >= elements.size) {
+                    if (index == 0) {
+                        hasNext = false
+                    }
+                    next[index] = 0
+                } else {
+                    next[index] = inc
+                    return next
+                }
+            }
+            return next
+        }
+    }
 
     private object Parser {
 
