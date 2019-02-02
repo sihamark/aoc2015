@@ -1,11 +1,19 @@
 package aoc2015.day15
 
+
 object Day15 {
 
-    fun highestCookieScore(): Int {
-        val ingredients = input.map { Parser.parse(it) }
+    fun highestCookieScore() = recipes()
+            .map { it.calculateScore() }
+            .max()!!
 
-        println(ingredients.map { it.name })
+    fun highestCookieScoreWith500Calories() = recipes()
+            .filter { it.calculateCalories() == 500 }
+            .map { it.calculateScore() }
+            .max()!!
+
+    private fun recipes(): Sequence<Recipe> {
+        val ingredients = input.map { Parser.parse(it) }
 
         return CounterIterator((0..100).toList(), 4)
                 .asSequence()
@@ -15,8 +23,6 @@ object Day15 {
                         CountedIngredient(amount, ingredients[index])
                     })
                 }
-                .map { it.calculateScore() }
-                .max()!!
     }
 
     private data class Recipe(
@@ -26,6 +32,8 @@ object Day15 {
                 sumProperty { it.durability } *
                 sumProperty { it.flavor } *
                 sumProperty { it.texture }
+
+        fun calculateCalories() = sumProperty { it.calories }
 
         private fun sumProperty(property: (Ingredient) -> Int): Int =
                 ingredients.map { it.amount * property(it.ingredient) }.sum().coerceAtLeast(0)
