@@ -15,12 +15,33 @@ object Day16 {
             "perfumes" to 1
     ).map { Property(it) }
 
-    fun findNumberOfSue(): Int? {
-        val validSues = input.map { Parser.parse(it) }
+    fun findNumberOfSue(): Int {
+        val validSues = sues()
                 .filter { targetSueProperties.containsAll(it.properties) }
 
-        return validSues.firstOrNull()?.number
+        return validSues.first().number
     }
+
+    fun findRealNumberOfSue(): Int {
+        val validSues = sues()
+                .filter { sue ->
+                    sue.properties.all { property ->
+                        val targetProperty = targetSueProperties.find { it.name == property.name }!!
+                        when (property.name) {
+                            "pomeranians" -> property.amount < targetProperty.amount
+                            "goldfish" -> property.amount < targetProperty.amount
+                            "cats" -> property.amount > targetProperty.amount
+                            "trees" -> property.amount > targetProperty.amount
+                            else -> property.amount == targetProperty.amount
+                        }
+                    }
+                }
+
+        return validSues.first().number
+    }
+
+    private fun sues() = input.asSequence()
+            .map { Parser.parse(it) }
 
     private data class Sue(
             val number: Int,
