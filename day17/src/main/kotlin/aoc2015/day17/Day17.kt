@@ -1,37 +1,74 @@
 package aoc2015.day17
 
-import aoc2015.utility.allVariants
-import java.math.BigInteger
-
 object Day17 {
 
     private const val TARGET_LITRES = 150
 
     fun findAmountOfTargetCombinations(): Int {
         val buckets = input.map { Parser.parse(it) }
-
-        val maxVariants = buckets.size.factorial()
-        println("max variants: $maxVariants")
+        val factors = Factors(buckets.size)
         var correct = 0
 
-        TODO()
+        while (!factors.isLast) {
+            val sumLitres = buckets * factors
+            if (sumLitres == TARGET_LITRES) correct++
 
-        buckets.allVariants {
-            println(it)
-            val sum = it.map(Bucket::litre).sum()
-            if (sum == TARGET_LITRES) correct++
+            factors.increase()
         }
 
         return correct
     }
 
-    private fun Int.factorial(): BigInteger {
-        var factorial = BigInteger.ONE
-        for (i in 1..this) {
-            // factorial = factorial * i;
-            factorial = factorial.multiply(BigInteger.valueOf(i.toLong()))
+    fun findAmountOfTargetCombinationsWithMinimalBuckets(): Int {
+        val buckets = input.map { Parser.parse(it) }
+        val factors = Factors(buckets.size)
+        var correct = 0
+
+        while (!factors.isLast) {
+            val sumLitres = buckets * factors
+            if (sumLitres == TARGET_LITRES) correct++
+
+            factors.increase()
         }
-        return factorial
+
+        return correct
+    }
+
+    private operator fun List<Bucket>.times(factors: Factors): Int {
+        if (size != factors.size) error("size of buckets and factors must be equal")
+
+        return mapIndexed { index, bucket -> bucket.litre * factors[index] }
+                .sum()
+    }
+
+    private class Factors(size: Int) {
+        private val factors = IntArray(size) { 0 }
+
+        val size
+            get() = factors.size
+
+        val sizeOfActive
+            get() = factors.count { it == 1 }
+
+        val isLast
+            get() = factors.all { it == 1 }
+
+        operator fun get(index: Int): Int = factors[index]
+
+        fun increase() {
+            increaseAtIndex(factors.lastIndex)
+        }
+
+        private fun increaseAtIndex(index: Int) {
+            factors[index]++
+            if (factors[index] == 2) {
+                factors[index] = 0
+                if (index == 0) return
+                increaseAtIndex(index - 1)
+            }
+        }
+
+        override fun toString() = factors.joinToString(separator = "")
     }
 
     private data class Bucket(val litre: Int) {
