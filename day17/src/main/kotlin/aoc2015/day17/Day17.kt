@@ -7,31 +7,28 @@ object Day17 {
     fun findAmountOfTargetCombinations(): Int {
         val buckets = input.map { Parser.parse(it) }
         val factors = Factors(buckets.size)
-        var correct = 0
 
-        while (!factors.isLast) {
-            val sumLitres = buckets * factors
-            if (sumLitres == TARGET_LITRES) correct++
-
-            factors.increase()
-        }
-
-        return correct
+        return factors.asSequence()
+                .map { buckets * it }
+                .filter { it == TARGET_LITRES }
+                .count()
     }
 
     fun findAmountOfTargetCombinationsWithMinimalBuckets(): Int {
         val buckets = input.map { Parser.parse(it) }
         val factors = Factors(buckets.size)
-        var correct = 0
 
-        while (!factors.isLast) {
-            val sumLitres = buckets * factors
-            if (sumLitres == TARGET_LITRES) correct++
+        val minBuckets = factors.asSequence()
+                .map { it to (buckets * it) }
+                .filter { (_, litres) -> litres == TARGET_LITRES }
+                .minBy { factors.sizeOfActive }!!.first.sizeOfActive
 
-            factors.increase()
-        }
-
-        return correct
+        //441 is not correct
+        return factors.asSequence()
+                .filter { it.sizeOfActive == minBuckets }
+                .map { buckets * it }
+                .filter { it == TARGET_LITRES }
+                .count()
     }
 
     private operator fun List<Bucket>.times(factors: Factors): Int {
@@ -41,8 +38,11 @@ object Day17 {
                 .sum()
     }
 
-    private class Factors(size: Int) {
-        private val factors = IntArray(size) { 0 }
+    private class Factors(
+            private val factors: IntArray
+    ) : Iterable<Factors> {
+
+        constructor(size: Int) : this(IntArray(size) { 0 })
 
         val size
             get() = factors.size
@@ -54,6 +54,8 @@ object Day17 {
             get() = factors.all { it == 1 }
 
         operator fun get(index: Int): Int = factors[index]
+
+        operator fun inc() = copy().apply { increase() }
 
         fun increase() {
             increaseAtIndex(factors.lastIndex)
@@ -68,7 +70,24 @@ object Day17 {
             }
         }
 
+        fun copy() = Factors(factors.copyOf())
+
+        override fun iterator() = FactorsIterator()
+
         override fun toString() = factors.joinToString(separator = "")
+
+        inner class FactorsIterator : Iterator<Factors> {
+            private var current = this@Factors
+
+            override fun hasNext() = !current.isLast
+
+            override fun next(): Factors {
+                val result = current
+                current++
+                return result
+            }
+
+        }
     }
 
     private data class Bucket(val litre: Int) {
