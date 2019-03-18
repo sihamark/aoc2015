@@ -19,15 +19,14 @@ object Day17 {
         val factors = Factors(buckets.size)
 
         val minBuckets = factors.asSequence()
-                .map { it to (buckets * it) }
-                .filter { (_, litres) -> litres == TARGET_LITRES }
-                .minBy { factors.sizeOfActive }!!.first.sizeOfActive
+                .filter { buckets * it == TARGET_LITRES }
+                .map { it.sizeOfActive }
+                .min()
 
-        //441 is not correct
         return factors.asSequence()
                 .filter { it.sizeOfActive == minBuckets }
-                .map { buckets * it }
-                .filter { it == TARGET_LITRES }
+                .filter { buckets * it == TARGET_LITRES }
+
                 .count()
     }
 
