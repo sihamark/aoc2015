@@ -13,6 +13,18 @@ object Day18 {
         return grid.amountOfTurnedOnLights()
     }
 
+    fun amountOfLightsTurnedOnAfter100StepsAndOnCorners(): Int {
+        var grid = Parser.parse()
+        grid.turnOnCorners()
+
+        (1..100).forEach {
+            grid++
+            grid.turnOnCorners()
+        }
+
+        return grid.amountOfTurnedOnLights()
+    }
+
     private object Parser {
         fun parse() = Grid().apply {
             input.split("\n")
@@ -74,6 +86,10 @@ object Day18 {
             }
         }
 
+        fun turnOnCorners() {
+            corners().forEach { lights[it] = true }
+        }
+
         companion object {
             private fun adjacent(x: Int, y: Int): List<Position> = listOf(
                     Position(x, y + 1),
@@ -85,6 +101,12 @@ object Day18 {
                     Position(x - 1, y + 1),
                     Position(x - 1, y - 1)
             )
+
+            private fun corners() = listOf(
+                    Position(0, 0),
+                    Position(0, 99),
+                    Position(99, 0),
+                    Position(99, 99))
         }
     }
 }
