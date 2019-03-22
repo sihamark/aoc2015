@@ -1,15 +1,15 @@
 package aoc2015.day18
 
-class Grid {
-    private val lights = mutableMapOf<Position, Boolean>()
+class Grid(lightValues: Map<Position, Boolean> = mapOf()) {
+    private val lights = lightValues.toMutableMap()
 
-    operator fun set(x: Int, y: Int, isOn: Boolean) {
+    private operator fun set(x: Int, y: Int, isOn: Boolean) {
         if (x !in (0 until MAX_WIDTH)) return
         if (y !in (0 until MAX_HEIGHT)) return
         lights[Position(x, y)] = isOn
     }
 
-    operator fun set(position: Position, isOn: Boolean) {
+    private operator fun set(position: Position, isOn: Boolean) {
         set(position.x, position.y, isOn)
     }
 

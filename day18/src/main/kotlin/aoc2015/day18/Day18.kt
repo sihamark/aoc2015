@@ -28,14 +28,15 @@ object Day18 {
     }
 
     private object Parser {
-        fun parse() = Grid().apply {
-            input.split("\n")
-                    .forEachIndexed { x, row ->
-                        row.forEachIndexed { y, c ->
-                            this[x, y] = c == '#'
+        fun parse(): Grid {
+            val lightValues = input.split("\n")
+                    .mapIndexed { x, row ->
+                        row.mapIndexed { y, c ->
+                            Position(x, y) to (c == '#')
                         }
-                    }
+                    }.flatten()
+                    .associate { it }
+            return Grid(lightValues)
         }
     }
-
 }

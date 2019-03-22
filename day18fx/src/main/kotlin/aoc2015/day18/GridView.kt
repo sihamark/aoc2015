@@ -1,12 +1,13 @@
 package aoc2015.day18
 
-import javafx.beans.binding.Bindings
+import javafx.beans.binding.When
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.geometry.Insets
 import javafx.scene.layout.Background
 import javafx.scene.layout.BackgroundFill
 import javafx.scene.layout.CornerRadii
 import javafx.scene.paint.Color
+import kotlinx.coroutines.*
 import tornadofx.*
 
 
@@ -23,46 +24,63 @@ class GridView : View() {
                 action { controller.pause() }
             }
         }
-        val lights = mutableMapOf<Position, SimpleBooleanProperty>()
         gridpane {
             (0 until Grid.MAX_HEIGHT).forEach { y ->
                 row {
                     (0 until Grid.MAX_WIDTH).forEach { x ->
-                        add(LightView().apply {
-                            lights[Position(x, y)] = isLightOnProperty
-                        })
+                        add(LightView(controller.gridProperties[Position(x, y)]
+                                ?: kotlin.error("no property found")))
                     }
                 }
             }
         }
     }
 
-    class LightView : View() {
-
-        val isLightOnProperty = SimpleBooleanProperty(false)
+    class LightView(
+            private val isLightOnProperty: SimpleBooleanProperty = SimpleBooleanProperty(false)
+    ) : View() {
 
         override val root = pane {
             setPrefSize(2.0, 2.0)
 
-            backgroundProperty().bind(Bindings.`when`(isLightOnProperty)
-                    .then(Background(BackgroundFill(Color.WHITE, CornerRadii.EMPTY, Insets.EMPTY)))
-                    .otherwise(Background(BackgroundFill(Color.BLACK, CornerRadii.EMPTY, Insets.EMPTY))))
+            backgroundProperty().bind(When(isLightOnProperty)
+                    .then(Color.BLACK.toBackground())
+                    .otherwise(Color.WHITE.toBackground()))
         }
+
+        private fun Color.toBackground() = Background(BackgroundFill(this, CornerRadii.EMPTY, Insets.EMPTY))
     }
 }
 
 class GridController : Controller() {
-    val grid = Day18.inputGrid
-    val gridProperties = (0 until Grid.MAX_WIDTH)
-            .flatMap { x ->
-                (0 until Grid.MAX_HEIGHT).map { y -> Position(x, y) }
-            }
+
+    private var grid = Day18.inputGrid
+    val gridProperties = Grid.positions().associateWith { SimpleBooleanProperty(grid[it]) }
+
+    private var job = Job().apply { cancel() }
 
     fun play() {
-
+        job.cancel()
+        job = GlobalScope.launch(Dispatchers.Default) {
+            while (isActive) {
+                delay(DELAY)
+                incrementGrid()
+            }
+        }
     }
 
     fun pause() {
+        job.cancel()
+    }
 
+    private fun incrementGrid() {
+        grid++
+        Grid.positions().forEach { pos ->
+            gridProperties[pos]?.set(grid[pos])
+        }
+    }
+
+    companion object {
+        private const val DELAY = 100L
     }
 }
