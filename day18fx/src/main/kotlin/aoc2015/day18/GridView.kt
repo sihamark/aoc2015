@@ -2,13 +2,10 @@ package aoc2015.day18
 
 import javafx.beans.binding.When
 import javafx.beans.property.SimpleBooleanProperty
-import javafx.geometry.Insets
-import javafx.scene.layout.Background
-import javafx.scene.layout.BackgroundFill
-import javafx.scene.layout.CornerRadii
 import javafx.scene.paint.Color
 import kotlinx.coroutines.*
 import tornadofx.*
+import kotlin.coroutines.CoroutineContext
 
 
 class GridView : View() {
@@ -41,18 +38,26 @@ class GridView : View() {
     ) : View() {
 
         override val root = pane {
-            setPrefSize(2.0, 2.0)
+            setMinSize(1.0, 1.0)
 
-            backgroundProperty().bind(When(isLightOnProperty)
-                    .then(Color.BLACK.toBackground())
-                    .otherwise(Color.WHITE.toBackground()))
+            backgroundProperty().bind(
+                    When(isLightOnProperty)
+                            .then(onBackground)
+                            .otherwise(offBackground)
+            )
         }
 
-        private fun Color.toBackground() = Background(BackgroundFill(this, CornerRadii.EMPTY, Insets.EMPTY))
+        companion object {
+            private val onBackground = Color.BLACK.asBackground()
+            private val offBackground = Color.WHITE.asBackground()
+        }
     }
 }
 
-class GridController : Controller() {
+class GridController : Controller(), CoroutineScope {
+
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Default
 
     private var grid = Day18.inputGrid
     val gridProperties = Grid.positions().associateWith { SimpleBooleanProperty(grid[it]) }
@@ -61,7 +66,7 @@ class GridController : Controller() {
 
     fun play() {
         job.cancel()
-        job = GlobalScope.launch(Dispatchers.Default) {
+        job = launch(Dispatchers.Default) {
             while (isActive) {
                 delay(DELAY)
                 incrementGrid()
