@@ -1,5 +1,7 @@
 package aoc2015.day18
 
+import javafx.beans.InvalidationListener
+import javafx.beans.Observable
 import javafx.beans.binding.Bindings
 import javafx.beans.binding.When
 import javafx.beans.property.SimpleBooleanProperty
@@ -9,6 +11,7 @@ import javafx.scene.layout.GridPane
 import javafx.scene.layout.Priority
 import javafx.scene.layout.RowConstraints
 import javafx.scene.paint.Color
+import kotlinx.coroutines.*
 import tornadofx.*
 
 
@@ -65,12 +68,40 @@ class GridView : View() {
 
     init {
         currentStage?.apply {
-            minWidth = 200.0
-            minHeight = 200.0
+            GlobalScope.launch {
+                var initWidth = 0.0
+                var initHeight = 0.0
+
+                widthProperty().addListener(object : InvalidationListener {
+                    override fun invalidated(observable: Observable?) {
+                        if (width != Double.NaN && width != 0.0) {
+                            initWidth = width
+                            widthProperty().removeListener(this)
+                        }
+                    }
+                })
+                heightProperty().addListener(object : InvalidationListener {
+                    override fun invalidated(observable: Observable?) {
+                        if (height != Double.NaN && height != 0.0) {
+                            initHeight = height
+                            heightProperty().removeListener(this)
+                        }
+                    }
+                })
+
+                while (isActive && (initWidth == 0.0 || initHeight == 0.0)) {
+                    yield()
+                }
+
+                launch(Dispatchers.Main) {
+                    minWidth = initWidth
+                    minHeight = initHeight
+                }
+            }
         }
+
         widthLabel.textProperty().bind(Bindings.selectString(currentStage?.widthProperty()))
         heightLabel.textProperty().bind(Bindings.selectString(currentStage?.heightProperty()))
-
     }
 
     class LightView(
