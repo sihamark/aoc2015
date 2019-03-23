@@ -4,8 +4,8 @@ class Grid(lightValues: Map<Position, Boolean> = mapOf()) {
     private val lights = lightValues.toMutableMap()
 
     private operator fun set(x: Int, y: Int, isOn: Boolean) {
-        if (x !in (0 until MAX_WIDTH)) return
-        if (y !in (0 until MAX_HEIGHT)) return
+        if (x !in rows) return
+        if (y !in columns) return
         lights[Position(x, y)] = isOn
     }
 
@@ -20,8 +20,8 @@ class Grid(lightValues: Map<Position, Boolean> = mapOf()) {
     fun amountOfTurnedOnLights() = lights.values.count { it }
 
     override fun toString() = buildString {
-        (0 until MAX_WIDTH).forEach { x ->
-            (0 until MAX_HEIGHT).forEach { y ->
+        rows.forEach { x ->
+            columns.forEach { y ->
                 append(if (this@Grid[x, y]) '#' else '.')
             }
             append('\n')
@@ -44,7 +44,7 @@ class Grid(lightValues: Map<Position, Boolean> = mapOf()) {
     }
 
     private fun forEach(block: (position: Position, isOn: Boolean) -> Unit) {
-        positions().forEach {
+        positions.forEach {
             block(it, this[it])
         }
     }
@@ -57,11 +57,16 @@ class Grid(lightValues: Map<Position, Boolean> = mapOf()) {
         const val MAX_WIDTH = 100
         const val MAX_HEIGHT = 100
 
-        fun positions() = (0 until MAX_WIDTH).flatMap { x ->
-            (0 until MAX_HEIGHT).map { y ->
-                Position(x, y)
+        val positions by lazy {
+            rows.flatMap { x ->
+                columns.map { y ->
+                    Position(x, y)
+                }
             }
         }
+
+        val rows by lazy { (0 until MAX_WIDTH) }
+        val columns by lazy { (0 until MAX_HEIGHT) }
 
         private fun adjacent(position: Position): List<Position> = with(position) {
             listOf(

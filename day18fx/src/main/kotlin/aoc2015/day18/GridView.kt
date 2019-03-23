@@ -32,9 +32,9 @@ class GridView : View() {
         center {
             grid = gridpane {
                 background = Color.ALICEBLUE.asBackground()
-                (0 until Grid.MAX_HEIGHT).forEach { y ->
+                Grid.columns.forEach { y ->
                     row {
-                        (0 until Grid.MAX_WIDTH).forEach { x ->
+                        Grid.rows.forEach { x ->
                             add(LightView(controller.lightAt(x, y)))
                         }
                     }

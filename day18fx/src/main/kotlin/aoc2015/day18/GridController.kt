@@ -11,7 +11,7 @@ class GridController : Controller(), CoroutineScope {
         get() = Dispatchers.Default
 
     private var grid = Day18.inputGrid
-    private val gridProperties = Grid.positions().associateWith { SimpleBooleanProperty(grid[it]) }
+    private val gridProperties = Grid.positions.associateWith { SimpleBooleanProperty(grid[it]) }
 
     private var job = Job().apply { cancel() }
 
@@ -36,7 +36,7 @@ class GridController : Controller(), CoroutineScope {
 
     private fun incrementGrid() {
         grid++
-        Grid.positions().forEach { pos ->
+        Grid.positions.forEach { pos ->
             gridProperties[pos]?.set(grid[pos])
         }
     }
