@@ -4,7 +4,10 @@ import javafx.beans.binding.Bindings
 import javafx.beans.binding.When
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.scene.control.Label
+import javafx.scene.layout.ColumnConstraints
 import javafx.scene.layout.GridPane
+import javafx.scene.layout.Priority
+import javafx.scene.layout.RowConstraints
 import javafx.scene.paint.Color
 import tornadofx.*
 
@@ -38,6 +41,17 @@ class GridView : View() {
                             add(LightView(controller.lightAt(x, y)))
                         }
                     }
+                }
+                Grid.columns.forEach {
+                    columnConstraints.add(ColumnConstraints().apply {
+                        hgrow = Priority.ALWAYS
+
+                    })
+                }
+                Grid.rows.forEach {
+                    rowConstraints.add(RowConstraints().apply {
+                        vgrow = Priority.ALWAYS
+                    })
                 }
             }
         }
