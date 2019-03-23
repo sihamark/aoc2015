@@ -2,10 +2,8 @@ package aoc2015.day18
 
 import javafx.beans.InvalidationListener
 import javafx.beans.Observable
-import javafx.beans.binding.Bindings
 import javafx.beans.binding.When
 import javafx.beans.property.SimpleBooleanProperty
-import javafx.scene.control.Label
 import javafx.scene.layout.ColumnConstraints
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.Priority
@@ -20,9 +18,6 @@ class GridView : View() {
     private val controller: GridController by inject()
 
     private var grid: GridPane by singleAssign()
-
-    private var widthLabel: Label by singleAssign()
-    private var heightLabel: Label by singleAssign()
 
     override val root = borderpane {
         top {
@@ -60,8 +55,9 @@ class GridView : View() {
         }
         bottom {
             hbox {
-                widthLabel = label()
-                heightLabel = label()
+                label {
+                    textProperty().bind(controller.currentlyActive.asString("is active: %d"))
+                }
             }
         }
     }
@@ -99,9 +95,6 @@ class GridView : View() {
                 }
             }
         }
-
-        widthLabel.textProperty().bind(Bindings.selectString(currentStage?.widthProperty()))
-        heightLabel.textProperty().bind(Bindings.selectString(currentStage?.heightProperty()))
     }
 
     class LightView(

@@ -1,6 +1,7 @@
 package aoc2015.day18
 
 import javafx.beans.property.SimpleBooleanProperty
+import javafx.beans.property.SimpleIntegerProperty
 import kotlinx.coroutines.*
 import tornadofx.Controller
 import kotlin.coroutines.CoroutineContext
@@ -12,6 +13,8 @@ class GridController : Controller(), CoroutineScope {
 
     private var grid = Day18.inputGrid
     private val gridProperties = Grid.positions.associateWith { SimpleBooleanProperty(grid[it]) }
+
+    val currentlyActive = SimpleIntegerProperty(grid.amountOfTurnedOnLights())
 
     private var job = Job().apply { cancel() }
 
@@ -38,6 +41,9 @@ class GridController : Controller(), CoroutineScope {
         grid++
         Grid.positions.forEach { pos ->
             gridProperties[pos]?.set(grid[pos])
+        }
+        launch(Dispatchers.Main) {
+            currentlyActive.set(grid.amountOfTurnedOnLights())
         }
     }
 
