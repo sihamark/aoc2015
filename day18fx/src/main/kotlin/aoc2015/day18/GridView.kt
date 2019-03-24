@@ -4,6 +4,7 @@ import javafx.beans.InvalidationListener
 import javafx.beans.Observable
 import javafx.beans.binding.When
 import javafx.beans.property.SimpleBooleanProperty
+import javafx.geometry.Pos
 import javafx.scene.layout.ColumnConstraints
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.Priority
@@ -21,12 +22,15 @@ class GridView : View() {
 
     override val root = borderpane {
         top {
-            hbox {
-                button("play") {
-                    action { controller.play() }
-                }
-                button("pause") {
-                    action { controller.pause() }
+            vbox {
+                hbox {
+                    alignment = Pos.CENTER
+                    button("play") {
+                        action { controller.play() }
+                    }
+                    button("pause") {
+                        action { controller.pause() }
+                    }
                 }
             }
         }
