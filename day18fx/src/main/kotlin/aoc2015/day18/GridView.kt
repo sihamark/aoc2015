@@ -5,10 +5,11 @@ import javafx.beans.Observable
 import javafx.beans.binding.When
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.geometry.Pos
+import javafx.scene.control.Control
 import javafx.scene.layout.ColumnConstraints
-import javafx.scene.layout.GridPane
 import javafx.scene.layout.Priority
 import javafx.scene.layout.RowConstraints
+import javafx.scene.layout.StackPane
 import javafx.scene.paint.Color
 import kotlinx.coroutines.*
 import tornadofx.*
@@ -17,8 +18,6 @@ import tornadofx.*
 class GridView : View() {
 
     private val controller: GridController by inject()
-
-    private var grid: GridPane by singleAssign()
 
     override val root = borderpane {
         top {
@@ -35,25 +34,37 @@ class GridView : View() {
             }
         }
         center {
-            grid = gridpane {
-                background = Color.ALICEBLUE.asBackground()
-                Grid.columns.forEach { y ->
-                    row {
-                        Grid.rows.forEach { x ->
-                            add(LightView(controller.lightAt(x, y)))
+            stackpane {
+                gridpane {
+                    val parent = parent as StackPane
+
+                    setMaxSize(Control.USE_PREF_SIZE, Control.USE_PREF_SIZE)
+
+                    parent.widthProperty().addListener { _, _, new ->
+                        prefWidth = ((new.toInt() / Grid.MAX_WIDTH) * Grid.MAX_WIDTH).toDouble()
+                    }
+                    parent.heightProperty().addListener { _, _, new ->
+                        prefHeight = ((new.toInt() / Grid.MAX_HEIGHT) * Grid.MAX_HEIGHT).toDouble()
+                    }
+
+                    alignment = Pos.CENTER
+                    Grid.columns.forEach { y ->
+                        row {
+                            Grid.rows.forEach { x ->
+                                add(LightView(controller.lightAt(x, y)))
+                            }
                         }
                     }
-                }
-                repeat(Grid.columns.count()) {
-                    columnConstraints.add(ColumnConstraints().apply {
-                        hgrow = Priority.ALWAYS
-
-                    })
-                }
-                repeat(Grid.rows.count()) {
-                    rowConstraints.add(RowConstraints().apply {
-                        vgrow = Priority.ALWAYS
-                    })
+                    repeat(Grid.columns.count()) {
+                        columnConstraints.add(ColumnConstraints().apply {
+                            hgrow = Priority.ALWAYS
+                        })
+                    }
+                    repeat(Grid.rows.count()) {
+                        rowConstraints.add(RowConstraints().apply {
+                            vgrow = Priority.ALWAYS
+                        })
+                    }
                 }
             }
         }
