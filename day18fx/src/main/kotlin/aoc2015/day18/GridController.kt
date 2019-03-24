@@ -16,8 +16,8 @@ class GridController : Controller(), CoroutineScope {
     private val gridProperties = Grid.positions.associateWith { SimpleBooleanProperty(grid[it]) }
 
     val currentlyActive = SimpleIntegerProperty(grid.amountOfTurnedOnLights())
-
     val speed = SimpleDoubleProperty(0.5)
+    val turnOnCorners = SimpleBooleanProperty(false)
 
     private var job = Job().apply { cancel() }
 
@@ -40,8 +40,22 @@ class GridController : Controller(), CoroutineScope {
         job.cancel()
     }
 
+    fun reset() {
+        job.cancel()
+
+        grid = Day18.inputGrid
+        setGridProperties()
+    }
+
     private fun incrementGrid() {
         grid++
+        if (turnOnCorners.get()) {
+            grid.turnOnCorners()
+        }
+        setGridProperties()
+    }
+
+    private fun setGridProperties() {
         Grid.positions.forEach { pos ->
             gridProperties[pos]?.set(grid[pos])
         }

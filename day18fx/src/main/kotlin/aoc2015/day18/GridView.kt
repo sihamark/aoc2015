@@ -22,23 +22,31 @@ class GridView : View() {
     private val controller: GridController by inject()
 
     override val root = borderpane {
-        top {
+        right {
             vbox {
+                alignment = Pos.CENTER
+                spacing = 8.0
+                padding = tornadofx.insets(8, 4)
                 hbox {
                     alignment = Pos.CENTER
+                    spacing = 8.0
                     button("play") {
                         action { controller.play() }
                     }
                     button("pause") {
                         action { controller.pause() }
                     }
-                }
-                hbox {
-                    alignment = Pos.CENTER
-                    label("speed:")
-                    slider(0.0..1.0) {
-                        valueProperty().bindBidirectional(controller.speed)
+                    button("reset") {
+                        action { controller.reset() }
                     }
+                }
+                label("speed:")
+                slider(0.0..1.0) {
+                    prefWidth(50.0)
+                    valueProperty().bindBidirectional(controller.speed)
+                }
+                checkbox("turn on corners") {
+                    selectedProperty().bindBidirectional(controller.turnOnCorners)
                 }
             }
         }
@@ -53,7 +61,7 @@ class GridView : View() {
                     prefWidthProperty().bind(Bindings.createDoubleBinding(
                             Callable { parent.width.floorToMultiple(Grid.MAX_WIDTH) }, parent.widthProperty()))
                     prefHeightProperty().bind(Bindings.createDoubleBinding(
-                            Callable { parent.width.floorToMultiple(Grid.MAX_HEIGHT) }, parent.heightProperty()))
+                            Callable { parent.height.floorToMultiple(Grid.MAX_HEIGHT) }, parent.heightProperty()))
 
                     Grid.columns.forEach { y ->
                         row {
