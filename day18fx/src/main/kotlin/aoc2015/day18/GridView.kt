@@ -1,7 +1,5 @@
 package aoc2015.day18
 
-import javafx.beans.InvalidationListener
-import javafx.beans.Observable
 import javafx.beans.binding.Bindings
 import javafx.beans.binding.When
 import javafx.beans.property.SimpleBooleanProperty
@@ -12,7 +10,6 @@ import javafx.scene.layout.Priority
 import javafx.scene.layout.RowConstraints
 import javafx.scene.layout.StackPane
 import javafx.scene.paint.Color
-import kotlinx.coroutines.*
 import tornadofx.*
 import java.util.concurrent.Callable
 
@@ -43,10 +40,10 @@ class GridView : View() {
                 label("speed:")
                 slider(0.0..1.0) {
                     prefWidth(50.0)
-                    valueProperty().bindBidirectional(controller.speed)
+                    valueProperty().bindBidirectional(controller.speedProperty)
                 }
                 checkbox("turn on corners") {
-                    selectedProperty().bindBidirectional(controller.turnOnCorners)
+                    selectedProperty().bindBidirectional(controller.turnOnCornersProperty)
                 }
             }
         }
@@ -81,8 +78,13 @@ class GridView : View() {
         }
         bottom {
             hbox {
+                padding = insets(2)
                 label {
-                    textProperty().bind(controller.currentlyActive.asString("is active: %d"))
+                    textProperty().bind(controller.currentlyActiveProperty.asString("is active: %d"))
+                }
+                region { hgrow = Priority.ALWAYS }
+                label {
+                    textProperty().bind(controller.stepProperty.asString("step: %d"))
                 }
             }
         }
@@ -90,36 +92,7 @@ class GridView : View() {
 
     init {
         currentStage?.apply {
-            GlobalScope.launch {
-                var initWidth = 0.0
-                var initHeight = 0.0
-
-                widthProperty().addListener(object : InvalidationListener {
-                    override fun invalidated(observable: Observable?) {
-                        if (width != Double.NaN && width != 0.0) {
-                            initWidth = width
-                            widthProperty().removeListener(this)
-                        }
-                    }
-                })
-                heightProperty().addListener(object : InvalidationListener {
-                    override fun invalidated(observable: Observable?) {
-                        if (height != Double.NaN && height != 0.0) {
-                            initHeight = height
-                            heightProperty().removeListener(this)
-                        }
-                    }
-                })
-
-                while (isActive && (initWidth == 0.0 || initHeight == 0.0)) {
-                    yield()
-                }
-
-                launch(Dispatchers.Main) {
-                    minWidth = initWidth
-                    minHeight = initHeight
-                }
-            }
+            Helper.setMinSizeToFirstChildSize(this)
         }
     }
 

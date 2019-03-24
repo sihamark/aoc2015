@@ -1,9 +1,10 @@
 package aoc2015.day18
 
-
 object Day18 {
 
-    val inputGrid = Parser.parse()
+    private val originalGrid: Grid = Parser.parse()
+    val inputGrid: Grid
+        get() = Grid(originalGrid)
 
     fun amountOfLightsTurnedOnAfter100Steps(): Int {
         var grid = inputGrid

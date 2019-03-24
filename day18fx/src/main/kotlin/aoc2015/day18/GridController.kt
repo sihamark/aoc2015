@@ -5,21 +5,39 @@ import javafx.beans.property.SimpleDoubleProperty
 import javafx.beans.property.SimpleIntegerProperty
 import kotlinx.coroutines.*
 import tornadofx.Controller
+import tornadofx.getValue
+import tornadofx.setValue
 import kotlin.coroutines.CoroutineContext
 
 class GridController : Controller(), CoroutineScope {
 
+    private var job = Job().apply { cancel() }
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Default
 
     private var grid = Day18.inputGrid
     private val gridProperties = Grid.positions.associateWith { SimpleBooleanProperty(grid[it]) }
 
-    val currentlyActive = SimpleIntegerProperty(grid.amountOfTurnedOnLights())
-    val speed = SimpleDoubleProperty(0.5)
-    val turnOnCorners = SimpleBooleanProperty(false)
+    val currentlyActiveProperty = SimpleIntegerProperty(grid.amountOfTurnedOnLights())
+    var currentlyActive by currentlyActiveProperty
 
-    private var job = Job().apply { cancel() }
+    val stepProperty = SimpleIntegerProperty(0)
+    var step by stepProperty
+
+    val speedProperty = SimpleDoubleProperty(0.5)
+    var speed by speedProperty
+
+    val turnOnCornersProperty = SimpleBooleanProperty(false)
+    var turnOnCorners by turnOnCornersProperty
+
+    init {
+        turnOnCornersProperty.addListener { _, _, _ ->
+            if (turnOnCorners) {
+                grid.turnOnCorners()
+                setGridProperties()
+            }
+        }
+    }
 
     fun lightAt(x: Int, y: Int): SimpleBooleanProperty {
         val position = Position(x, y)
@@ -30,7 +48,7 @@ class GridController : Controller(), CoroutineScope {
         job.cancel()
         job = launch(Dispatchers.Default) {
             while (isActive) {
-                delay((10 + (1.0 - speed.get()) * 500).toLong())
+                delay((10 + (1.0 - speed) * 500).toLong())
                 incrementGrid()
             }
         }
@@ -44,14 +62,18 @@ class GridController : Controller(), CoroutineScope {
         job.cancel()
 
         grid = Day18.inputGrid
+        if (turnOnCorners) {
+            grid.turnOnCorners()
+        }
         setGridProperties()
     }
 
     private fun incrementGrid() {
         grid++
-        if (turnOnCorners.get()) {
+        if (turnOnCorners) {
             grid.turnOnCorners()
         }
+        launch(Dispatchers.Main) { step++ }
         setGridProperties()
     }
 
@@ -60,7 +82,7 @@ class GridController : Controller(), CoroutineScope {
             gridProperties[pos]?.set(grid[pos])
         }
         launch(Dispatchers.Main) {
-            currentlyActive.set(grid.amountOfTurnedOnLights())
+            currentlyActive = grid.amountOfTurnedOnLights()
         }
     }
 }

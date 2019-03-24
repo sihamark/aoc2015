@@ -1,6 +1,9 @@
 package aoc2015.day18
 
 class Grid(lightValues: Map<Position, Boolean> = mapOf()) {
+
+    constructor(grid: Grid) : this(grid.lights.toMutableMap())
+
     private val lights = lightValues.toMutableMap()
 
     private operator fun set(x: Int, y: Int, isOn: Boolean) {
@@ -50,7 +53,7 @@ class Grid(lightValues: Map<Position, Boolean> = mapOf()) {
     }
 
     fun turnOnCorners() {
-        corners().forEach { lights[it] = true }
+        corners.forEach { lights[it] = true }
     }
 
     companion object {
@@ -68,6 +71,12 @@ class Grid(lightValues: Map<Position, Boolean> = mapOf()) {
         val rows by lazy { (0 until MAX_WIDTH) }
         val columns by lazy { (0 until MAX_HEIGHT) }
 
+        val corners = listOf(
+                Position(0, 0),
+                Position(0, MAX_HEIGHT - 1),
+                Position(MAX_WIDTH - 1, 0),
+                Position(MAX_WIDTH - 1, MAX_HEIGHT - 1))
+
         private fun adjacent(position: Position): List<Position> = with(position) {
             listOf(
                     Position(x, y + 1),
@@ -80,11 +89,5 @@ class Grid(lightValues: Map<Position, Boolean> = mapOf()) {
                     Position(x - 1, y - 1)
             )
         }
-
-        private fun corners() = listOf(
-                Position(0, 0),
-                Position(0, 99),
-                Position(99, 0),
-                Position(99, 99))
     }
 }
