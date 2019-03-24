@@ -2,6 +2,7 @@ package aoc2015.day18
 
 import javafx.beans.InvalidationListener
 import javafx.beans.Observable
+import javafx.beans.binding.Bindings
 import javafx.beans.binding.When
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.geometry.Pos
@@ -13,6 +14,7 @@ import javafx.scene.layout.StackPane
 import javafx.scene.paint.Color
 import kotlinx.coroutines.*
 import tornadofx.*
+import java.util.concurrent.Callable
 
 
 class GridView : View() {
@@ -36,18 +38,16 @@ class GridView : View() {
         center {
             stackpane {
                 gridpane {
-                    val parent = parent as StackPane
+                    alignment = Pos.CENTER
 
+                    val parent = parent as StackPane
                     setMaxSize(Control.USE_PREF_SIZE, Control.USE_PREF_SIZE)
 
-                    parent.widthProperty().addListener { _, _, new ->
-                        prefWidth = ((new.toInt() / Grid.MAX_WIDTH) * Grid.MAX_WIDTH).toDouble()
-                    }
-                    parent.heightProperty().addListener { _, _, new ->
-                        prefHeight = ((new.toInt() / Grid.MAX_HEIGHT) * Grid.MAX_HEIGHT).toDouble()
-                    }
+                    prefWidthProperty().bind(Bindings.createDoubleBinding(
+                            Callable { parent.width.floorToMultiple(Grid.MAX_WIDTH) }, parent.widthProperty()))
+                    prefHeightProperty().bind(Bindings.createDoubleBinding(
+                            Callable { parent.width.floorToMultiple(Grid.MAX_HEIGHT) }, parent.heightProperty()))
 
-                    alignment = Pos.CENTER
                     Grid.columns.forEach { y ->
                         row {
                             Grid.rows.forEach { x ->
@@ -55,15 +55,11 @@ class GridView : View() {
                             }
                         }
                     }
-                    repeat(Grid.columns.count()) {
-                        columnConstraints.add(ColumnConstraints().apply {
-                            hgrow = Priority.ALWAYS
-                        })
+                    repeat(Grid.MAX_WIDTH) {
+                        columnConstraints.add(ColumnConstraints().apply { hgrow = Priority.ALWAYS })
                     }
-                    repeat(Grid.rows.count()) {
-                        rowConstraints.add(RowConstraints().apply {
-                            vgrow = Priority.ALWAYS
-                        })
+                    repeat(Grid.MAX_HEIGHT) {
+                        rowConstraints.add(RowConstraints().apply { vgrow = Priority.ALWAYS })
                     }
                 }
             }
@@ -130,6 +126,10 @@ class GridView : View() {
             private val onBackground = Color.BLACK.asBackground()
             private val offBackground = Color.WHITE.asBackground()
         }
+    }
+
+    companion object {
+        private fun Double.floorToMultiple(of: Int) = ((this.toInt() / of) * of).toDouble()
     }
 }
 
