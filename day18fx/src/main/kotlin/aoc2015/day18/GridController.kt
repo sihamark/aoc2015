@@ -1,6 +1,7 @@
 package aoc2015.day18
 
 import javafx.beans.property.SimpleBooleanProperty
+import javafx.beans.property.SimpleDoubleProperty
 import javafx.beans.property.SimpleIntegerProperty
 import kotlinx.coroutines.*
 import tornadofx.Controller
@@ -16,6 +17,8 @@ class GridController : Controller(), CoroutineScope {
 
     val currentlyActive = SimpleIntegerProperty(grid.amountOfTurnedOnLights())
 
+    val speed = SimpleDoubleProperty(0.5)
+
     private var job = Job().apply { cancel() }
 
     fun lightAt(x: Int, y: Int): SimpleBooleanProperty {
@@ -27,7 +30,7 @@ class GridController : Controller(), CoroutineScope {
         job.cancel()
         job = launch(Dispatchers.Default) {
             while (isActive) {
-                delay(DELAY)
+                delay((10 + (1.0 - speed.get()) * 500).toLong())
                 incrementGrid()
             }
         }
@@ -45,9 +48,5 @@ class GridController : Controller(), CoroutineScope {
         launch(Dispatchers.Main) {
             currentlyActive.set(grid.amountOfTurnedOnLights())
         }
-    }
-
-    companion object {
-        private const val DELAY = 100L
     }
 }

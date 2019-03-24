@@ -33,6 +33,13 @@ class GridView : View() {
                         action { controller.pause() }
                     }
                 }
+                hbox {
+                    alignment = Pos.CENTER
+                    label("speed:")
+                    slider(0.0..1.0) {
+                        valueProperty().bindBidirectional(controller.speed)
+                    }
+                }
             }
         }
         center {
