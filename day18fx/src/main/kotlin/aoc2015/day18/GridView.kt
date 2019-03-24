@@ -44,13 +44,13 @@ class GridView : View() {
                         }
                     }
                 }
-                Grid.columns.forEach {
+                repeat(Grid.columns.count()) {
                     columnConstraints.add(ColumnConstraints().apply {
                         hgrow = Priority.ALWAYS
 
                     })
                 }
-                Grid.rows.forEach {
+                repeat(Grid.rows.count()) {
                     rowConstraints.add(RowConstraints().apply {
                         vgrow = Priority.ALWAYS
                     })

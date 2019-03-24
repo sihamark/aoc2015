@@ -8,7 +8,7 @@ object Day18 {
     fun amountOfLightsTurnedOnAfter100Steps(): Int {
         var grid = inputGrid
 
-        (1..100).forEach {
+        repeat(100) {
             grid++
         }
 
@@ -19,7 +19,7 @@ object Day18 {
         var grid = inputGrid
         grid.turnOnCorners()
 
-        (1..100).forEach {
+        repeat(100) {
             grid++
             grid.turnOnCorners()
         }
