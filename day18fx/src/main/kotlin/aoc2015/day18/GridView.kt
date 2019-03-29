@@ -90,10 +90,10 @@ class GridView : View() {
         }
     }
 
-    init {
-        currentStage?.apply {
-            Helper.setMinSizeToFirstChildSize(this)
-        }
+    override fun onDock() {
+        //make sure the window cannot become smaller as it is when it was first shown
+        primaryStage.minWidth = primaryStage.width
+        primaryStage.minHeight = primaryStage.height
     }
 
     class LightView(
