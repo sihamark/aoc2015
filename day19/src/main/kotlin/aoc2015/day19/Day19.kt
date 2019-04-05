@@ -2,15 +2,18 @@ package aoc2015.day19
 
 object Day19 {
 
-    fun numberOfDistinctMoleculesAfterOneReplacement() {
-
+    fun numberOfDistinctMoleculesAfterOneReplacement(): Int {
+        replacements.map { Parser.parseReplacement(it) }
+        TODO("do the replacements")
     }
 
     private object Parser {
-        private val validReplacement = Regex("""(\w+) => \w+""")
+        private val validReplacement = Regex("""(\w+) => (\w+)""")
 
         fun parseReplacement(rawReplacement: String): Replacement {
-            TODO("implement")
+            val values = validReplacement.find(rawReplacement)?.groupValues
+                    ?: error("invalid replacement: $rawReplacement")
+            return Replacement(values[1], values[2])
         }
     }
 
