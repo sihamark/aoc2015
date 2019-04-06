@@ -2,9 +2,27 @@ package aoc2015.day19
 
 object Day19 {
 
-    fun numberOfDistinctMoleculesAfterOneReplacement(): Int {
-        replacements.map { Parser.parseReplacement(it) }
-        TODO("do the replacements")
+    private val replacements = rawReplacements.map { Parser.parseReplacement(it) }
+
+    fun numberOfDistinctMoleculesAfterOneReplacement() =
+            replacements.flatMap { it.doReplace(medicine) }
+                    .distinct()
+                    .size
+
+    fun findFewestStepsToFabricateMedicine(): Int {
+        return fabricate(medicine, 100, "e")
+    }
+
+    private fun fabricate(target: String, maxSteps: Int = 100, current: String, steps: Int = 0): Int {
+        val currentReplacements = replacements.flatMap { it.doReplace(current) }
+        val newStep = steps + 1
+        return when {
+            currentReplacements.any { it == target } -> newStep
+            newStep >= maxSteps -> Integer.MAX_VALUE
+            else -> currentReplacements.map {
+                fabricate(target, maxSteps, it, newStep)
+            }.min() ?: error("no min found")
+        }
     }
 
     private object Parser {
@@ -20,5 +38,10 @@ object Day19 {
     private data class Replacement(
             val source: String,
             val replacement: String
-    )
+    ) {
+        fun doReplace(medicine: String) = Regex(source).findAll(medicine)
+                .map { medicine.replaceRange(it.range, replacement) }
+                .distinct()
+                .toList()
+    }
 }
