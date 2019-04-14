@@ -1,5 +1,8 @@
 package aoc2015.day19
 
+import kotlinx.coroutines.*
+import java.util.concurrent.atomic.AtomicInteger
+
 object Day19 {
 
     private val replacements = rawReplacements.map { Parser.parseReplacement(it) }
@@ -9,19 +12,59 @@ object Day19 {
                     .distinct()
                     .size
 
-    fun findFewestStepsToFabricateMedicine(): Int {
-        return fabricate(medicine, 100, "e")
+    fun findFewestStepsToFabricateMedicine(): Int = runBlocking {
+        val counter = AtomicInteger(0)
+        val start = System.currentTimeMillis()
+        val steps = async {
+            println("begin fabrication")
+            fabricate(medicine, counter, "e")
+        }
+
+        launch {
+            while (isActive) {
+                delay(5_000)
+                val time = System.currentTimeMillis() - start
+                println("did ${counter.get()} replacements in $time ms")
+            }
+        }
+
+        launch {
+            println("stop fabrication in 5 seconds")
+            delay(60_000)
+            println("stopping fabrication")
+            try {
+                steps.cancelAndJoin()
+            } finally {
+                println("did ${counter.get()} replacements")
+            }
+        }
+
+        steps.await()
     }
 
-    private fun fabricate(target: String, maxSteps: Int = 100, current: String, steps: Int = 0): Int {
+    private suspend fun fabricate(target: String, counter: AtomicInteger, current: String, steps: Int = 0): Int {
+        yield()
+
         val currentReplacements = replacements.flatMap { it.doReplace(current) }
+                .distinct()
+                .filter { it.length <= target.length }
+
+        counter.incrementAndGet()
         val newStep = steps + 1
+
         return when {
             currentReplacements.any { it == target } -> newStep
-            newStep >= maxSteps -> Integer.MAX_VALUE
-            else -> currentReplacements.map {
-                fabricate(target, maxSteps, it, newStep)
-            }.min() ?: error("no min found")
+            currentReplacements.isEmpty() -> Integer.MAX_VALUE
+            else -> {
+                var min = Integer.MAX_VALUE
+                for (replacement in currentReplacements) {
+                    val newSteps = fabricate(target, counter, replacement, newStep)
+                    if (newSteps < min) {
+                        min = newSteps
+                    }
+                }
+                min
+            }
         }
     }
 

@@ -10,7 +10,7 @@ application {
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation 'no.tornado:tornadofx:1.7.17'
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-javafx:1.1.1'
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-javafx:$coroutine_version"
 
     implementation project(':day18')
 }
