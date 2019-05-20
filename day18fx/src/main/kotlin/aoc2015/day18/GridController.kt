@@ -11,7 +11,7 @@ import kotlin.coroutines.CoroutineContext
 
 class GridController : Controller(), CoroutineScope {
 
-    private var job = (Job() as Job).apply { cancel() }
+    private var job: Job = Job().apply { cancel() }
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Default
 
