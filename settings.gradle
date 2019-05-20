@@ -4,6 +4,6 @@ include 'common'
 include 'utility'
 include 'day18fx'
 
-(1..19).each {
+(1..20).each {
     include("day$it")
 }
