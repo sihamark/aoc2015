@@ -1,0 +1,22 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm'
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.0.13'
+}
+
+application {
+    mainClassName = 'aoc2015.day18.Application'
+}
+
+javafx {
+    version = "19"
+    modules = ['javafx.controls']
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    implementation 'no.tornado:tornadofx:1.7.20'
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-javafx:$coroutine_version"
+
+    implementation project(':day18')
+}
