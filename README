@@ -1,0 +1,5 @@
+# Advent of Code 2015
+
+This project contains solutions for the Advent of Code 2015 written in kotlin.
+
+This project uses gradle as a build system.
